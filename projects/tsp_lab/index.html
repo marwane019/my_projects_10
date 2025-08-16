@@ -1,0 +1,58 @@
+<!doctype html><html lang='en'><head>
+<meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>TSP Studio</title><link rel='stylesheet' href='../../assets/css/style.css'></head><body>
+<header class='nav'><div class='container'><a class='brand' href='../../index.html'>&larr; Back</a><button id='theme' class='btn'>Theme</button></div></header>
+<section class='container prose'>
+  <h2>TSP Studio</h2>
+  <p><strong>What you see:</strong> a set of cities connected by a route. The line animates as the solver improves the tour length.</p>
+  <p><strong>How to use:</strong> click to add cities or Random 40; Run builds a nearest‑neighbor tour then auto‑applies 2‑opt improvements.</p>
+  
+<div class="controls">
+  <button class="btn" id="random">Random 40</button>
+  <button class="btn" id="clear">Clear</button>
+  <button class="btn" id="run">Run (NN + 2‑opt)</button>
+  <span class="kpi">Length: <span id="len">0</span></span>
+  <span class="kpi">Improved: <span id="imp">0</span></span>
+</div>
+<canvas id="plane" width="900" height="520" class="stage"></canvas>
+<p><small class="mono">Click to add cities. The algorithm builds a nearest‑neighbor route, then improves with 2‑opt while animating swaps.</small></p>
+
+</section>
+<footer><div class='container'>Contact: <a href='mailto:ambrosetheshield6@gmail.com'>ambrosetheshield6@gmail.com</a></div></footer>
+<script>document.getElementById('theme').onclick=()=>document.documentElement.classList.toggle('light');</script>
+
+<script>
+const cv=document.getElementById('plane'), ctx=cv.getContext('2d'); let pts=[], path=[]; let anim=null;
+cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect(); pts.push({x:e.clientX-r.left,y:e.clientY-r.top}); draw();});
+document.getElementById('clear').onclick=()=>{pts=[]; path=[]; draw()};
+document.getElementById('random').onclick=()=>{pts=[]; for(let i=0;i<40;i++) pts.push({x:50+Math.random()*800,y:40+Math.random()*440}); draw();};
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function nn(){ if(pts.length<2) return []; const used=new Set(); let i=0; used.add(i); const order=[i]; while(order.length<pts.length){ let best=-1, bd=1e9; for(let j=0;j<pts.length;j++){ if(used.has(j)) continue; const d=dist(pts[i],pts[j]); if(d<bd){bd=d; best=j;} } i=best; used.add(i); order.push(i); } return order;}
+function length(order){ let s=0; for(let i=0;i<order.length;i++){ const a=pts[order[i]], b=pts[order[(i+1)%order.length]]; s+=dist(a,b);} return s.toFixed(0);}
+function draw(order=path){ ctx.fillStyle='rgba(12,20,43,1)'; ctx.fillRect(0,0,cv.width,cv.height); ctx.strokeStyle='#6aa8ff'; ctx.lineWidth=1.5;
+  if(order.length>1){ ctx.beginPath(); for(let i=0;i<order.length;i++){ const a=pts[order[i]], b=pts[order[(i+1)%order.length]]; ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);} ctx.stroke(); }
+  ctx.fillStyle='#ffd26a'; pts.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,4,0,6.283); ctx.fill();});
+  if(order.length){ document.getElementById('len').textContent=length(order); }
+}
+function twoOpt(order){
+  let improved=0;
+  for(let i=0;i<order.length-1;i++){
+    for(let k=i+2;k<order.length- (i===0?1:0); k++){
+      const a=pts[order[i]], b=pts[order[i+1]], c=pts[order[k]], d=pts[order[(k+1)%order.length]];
+      const delta=(dist(a,c)+dist(b,d))-(dist(a,b)+dist(c,d));
+      if(delta< -0.1){ order.splice(i+1, k-i, ...order.slice(i+1,k+1).reverse()); improved++; draw(order); return {improved:true, order, improvedCount:improved}; }
+    }
+  }
+  return {improved:false, order, improvedCount:improved};
+}
+document.getElementById('run').onclick=()=>{
+  if(pts.length<3) return;
+  path = nn(); draw(path);
+  let imp=0;
+  function step(){ const res=twoOpt(path); imp+=res.improvedCount; document.getElementById('imp').textContent=imp; if(res.improved) requestAnimationFrame(step); }
+  step();
+};
+draw();
+</script>
+
+</body></html>

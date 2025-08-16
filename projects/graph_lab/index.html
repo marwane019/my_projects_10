@@ -1,0 +1,45 @@
+<!doctype html><html lang='en'><head>
+<meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Force‑Graph</title><link rel='stylesheet' href='../../assets/css/style.css'></head><body>
+<header class='nav'><div class='container'><a class='brand' href='../../index.html'>&larr; Back</a><button id='theme' class='btn'>Theme</button></div></header>
+<section class='container prose'>
+  <h2>Force‑Graph</h2>
+  <p><strong>What you see:</strong> a network that relaxes into a readable layout; thicker areas show denser connections; node size reflects degree.</p>
+  <p><strong>How to use:</strong> click Random graph; drag nodes around; adjust node count and link probability; watch it flow into place.</p>
+  
+<div class="controls">
+  <button class="btn" id="random">Random graph</button>
+  <button class="btn" id="clear">Clear</button>
+  <label>Nodes <input id="n" type="range" min="10" max="120" value="40"></label>
+  <label>Link p <input id="p" type="range" min="0" max="1" step="0.01" value="0.06"></label>
+</div>
+<canvas id="net" width="900" height="520" class="stage"></canvas>
+<p><small class="mono">Drag nodes. Layout uses a spring‑repulsion model; degree controls node size.</small></p>
+
+</section>
+<footer><div class='container'>Contact: <a href='mailto:ambrosetheshield6@gmail.com'>ambrosetheshield6@gmail.com</a></div></footer>
+<script>document.getElementById('theme').onclick=()=>document.documentElement.classList.toggle('light');</script>
+
+<script>
+const cv=document.getElementById('net'), ctx=cv.getContext('2d');
+let nodes=[], edges=[]; let dragging=-1;
+function gen(n=40, p=0.06){ nodes=[]; edges=[]; for(let i=0;i<n;i++){ nodes.push({x:Math.random()*cv.width,y:Math.random()*cv.height,vx:0,vy:0}); }
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) if(Math.random()<p) edges.push([i,j]); }
+function step(){
+  for(let i=0;i<nodes.length;i++){ for(let j=i+1;j<nodes.length;j++){ const dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y; const d=Math.hypot(dx,dy)+0.01; const f=1000/(d*d); const ux=dx/d, uy=dy/d; nodes[i].vx-=ux*f; nodes[i].vy-=uy*f; nodes[j].vx+=ux*f; nodes[j].vy+=uy*f; } }
+  edges.forEach(([i,j])=>{ const dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y; const d=Math.hypot(dx,dy); const k=0.01*(d-90); const ux=dx/(d||1), uy=dy/(d||1); nodes[i].vx+=ux*k; nodes[i].vy+=uy*k; nodes[j].vx-=ux*k; nodes[j].vy-=uy*k; });
+  nodes.forEach(n=>{ n.vx*=0.85; n.vy*=0.85; n.x=Math.max(10, Math.min(cv.width-10, n.x+n.vx*0.016)); n.y=Math.max(10, Math.min(cv.height-10, n.y+n.vy*0.016)); });
+}
+function draw(){ ctx.clearRect(0,0,cv.width,cv.height); ctx.strokeStyle='#1a2b55'; edges.forEach(([i,j])=>{ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();});
+  const deg=new Array(nodes.length).fill(0); edges.forEach(([i,j])=>{deg[i]++;deg[j]++;});
+  for(let i=0;i<nodes.length;i++){ ctx.beginPath(); ctx.fillStyle='#6aa8ff'; ctx.arc(nodes[i].x,nodes[i].y, 3+deg[i]*0.6, 0, 6.283); ctx.fill(); }
+}
+cv.addEventListener('mousedown',e=>{const r=cv.getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; dragging = nodes.findIndex(n=>Math.hypot(n.x-x,n.y-y)<8);});
+cv.addEventListener('mousemove',e=>{if(dragging<0) return; const r=cv.getBoundingClientRect(); nodes[dragging].x=e.clientX-r.left; nodes[dragging].y=e.clientY-r.top;});
+window.addEventListener('mouseup',()=>dragging=-1);
+document.getElementById('random').onclick=()=>{gen(+document.getElementById('n').value, +document.getElementById('p').value)};
+document.getElementById('clear').onclick=()=>{nodes=[]; edges=[]};
+function loop(){ step(); draw(); requestAnimationFrame(loop); } gen(); loop();
+</script>
+
+</body></html>

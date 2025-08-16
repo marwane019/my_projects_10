@@ -1,0 +1,35 @@
+<!doctype html><html lang='en'><head>
+<meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Falling Sand</title><link rel='stylesheet' href='../../assets/css/style.css'></head><body>
+<header class='nav'><div class='container'><a class='brand' href='../../index.html'>&larr; Back</a><button id='theme' class='btn'>Theme</button></div></header>
+<section class='container prose'>
+  <h2>Falling Sand</h2>
+  <p><strong>What you see:</strong> a pixel world where you paint sand, water, or walls and watch them obey simple physics.</p>
+  <p><strong>How to use:</strong> choose a material; drag on the canvas to paint; clear to reset. Sand piles; water flows and spreads.</p>
+  
+<div class="controls">
+  <select id="mat"><option value="1">Sand</option><option value="2">Water</option><option value="3">Wall</option></select>
+  <label>Brush <input id="brush" type="range" min="1" max="12" value="5"></label>
+  <button class="btn" id="clear">Clear</button>
+</div>
+<canvas id="world" width="900" height="520" class="stage"></canvas>
+<p><small class="mono">Paint materials, watch physics. Sand falls and piles; water flows and fills.</small></p>
+
+</section>
+<footer><div class='container'>Contact: <a href='mailto:ambrosetheshield6@gmail.com'>ambrosetheshield6@gmail.com</a></div></footer>
+<script>document.getElementById('theme').onclick=()=>document.documentElement.classList.toggle('light');</script>
+
+<script>
+const cv=document.getElementById('world'), ctx=cv.getContext('2d');
+const W=180,H=104, PIX=5; let grid=new Int16Array(W*H); let painting=false;
+function idx(x,y){return y*W+x} function inside(x,y){return x>=0&&x<W&&y>=0&&y<H}
+cv.addEventListener('mousedown',()=>painting=true); window.addEventListener('mouseup',()=>painting=false);
+cv.addEventListener('mousemove',e=>{ if(!painting) return; const r=cv.getBoundingClientRect(); const x=Math.floor((e.clientX-r.left)/PIX), y=Math.floor((e.clientY-r.top)/PIX); const b=+document.getElementById('brush').value, m=+document.getElementById('mat').value; for(let dy=-b;dy<=b;dy++){for(let dx=-b;dx<=b;dx++){ if(dx*dx+dy*dy<=b*b){ const xx=x+dx, yy=y+dy; if(inside(xx,yy)) grid[idx(xx,yy)]=m; }}} });
+document.getElementById('clear').onclick=()=>{grid.fill(0)};
+function step(){ const g = grid.slice(); for(let y=H-2;y>=0;y--){ for(let x=1;x<W-1;x++){ const t=g[idx(x,y)]; if(t===1){ if(g[idx(x,y+1)]===0){ grid[idx(x,y)]=0; grid[idx(x,y+1)]=1; } else if(g[idx(x-1,y+1)]===0){ grid[idx(x,y)]=0; grid[idx(x-1,y+1)]=1; } else if(g[idx(x+1,y+1)]===0){ grid[idx(x,y)]=0; grid[idx(x+1,y+1)]=1; } } else if(t===2){ if(g[idx(x,y+1)]===0){ grid[idx(x,y)]=0; grid[idx(x,y+1)]=2; } else { const dir=Math.random()<0.5?-1:1; if(g[idx(x+dir,y)]===0){ grid[idx(x,y)]=0; grid[idx(x+dir,y)]=2; } else if(g[idx(x-dir,y)]===0){ grid[idx(x,y)]=0; grid[idx(x-dir,y)]=2; } } } } } }
+function draw(){ ctx.fillStyle='#0c142b'; ctx.fillRect(0,0,cv.width,cv.height);
+  for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ const t=grid[idx(x,y)]; if(!t) continue; if(t===1) ctx.fillStyle='#e8c36a'; if(t===2) ctx.fillStyle='#5ea0ff'; if(t===3) ctx.fillStyle='#9aa3b5'; ctx.fillRect(x*PIX,y*PIX,PIX,PIX); } } }
+function loop(){ step(); draw(); requestAnimationFrame(loop); } loop();
+</script>
+
+</body></html>

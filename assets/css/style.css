@@ -1,0 +1,27 @@
+:root{--bg:#0b1220;--ink:#e8f0ff;--muted:#a7b6da;--card:#101a33;--accent:#6aa8ff;--border:#1a2b55;--panel:#0f1930}
+:root.light{--bg:#ffffff;--ink:#0b1220;--muted:#38507e;--card:#f5f8ff;--accent:#2f6bff;--border:#d7e3ff;--panel:#ffffff}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:radial-gradient(1200px 600px at 20% -10%, #19285a 0%, var(--bg) 60%);color:var(--ink);
+font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+header.nav{position:sticky;top:0;background:rgba(11,18,32,.6);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:20}
+header.nav .container{display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:800;letter-spacing:.4px}
+.btn{background:#133064;border:1px solid var(--border);color:#d9e6ff;padding:9px 12px;border-radius:12px;cursor:pointer}
+.btn:hover{background:#163a77}
+.hero{padding:56px 24px 24px}
+.hero h1{margin:0 0 6px;font-size:30px}
+.hero p{margin:0;color:var(--muted);max-width:900px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;transition:transform .15s ease, box-shadow .15s ease;box-shadow:0 12px 24px rgba(0,0,0,.18)}
+.card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.30)}
+.card h3{margin:6px 0 2px}.card p{margin:0;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.controls > *{border:1px solid var(--border);background:var(--panel);color:var(--ink);padding:8px;border-radius:10px}
+input[type="range"]{accent-color:var(--accent)} select{accent-color:var(--accent)}
+.kpi{display:inline-block;margin-right:10px;padding:4px 10px;border-radius:999px;background:#0d1a36;border:1px solid var(--border);font-size:12px;color:#cfe0ff}
+canvas.chart,canvas.stage{border:1px solid var(--border);border-radius:12px;background:#0c142b;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.prose p{line-height:1.6}
+footer .container{padding-bottom:30px}
+small.mono{font-family:ui-monospace,Menlo,Consolas,monospace;opacity:.85}
